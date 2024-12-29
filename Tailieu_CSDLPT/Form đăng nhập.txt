@@ -1,0 +1,49 @@
+Form đăng nhập:
++Chọn chi nhánh = Combo box
++Nếu có lỗi thì in ra lỗi tiếng Việt cả lẫn tiếng Anh
+
+Login name -> Server
+USer name -> Database
+
+Nhóm SQL Server (Role):
++Nhóm trên server -> SQL: Server Roles
++Nhóm trên database -> SQL: Database Roles (Bắt đầu bằng chữ db)
+
+Các nhóm server:
++Sysadmin: Toàn quyền server = Chủ của các database
++Securityadmin: Quản lý việc login = Tạo login
+
+Các nhóm database:
++db_owner: quyền cao nhất, được thực hiện tất cả các thao tác
+Nếu 1 user thuộc nhóm này thì user này có quyền cao nhất
++db_accessadmin: Thêm hay xóa các user khỏi CSDL
++db_securityadmin: Đưa user vào nhóm CSDL
+=>Công ty và chi nhánh bắt buộc phải thuộc db_accessadmin và db_securityadmin
++db_datareader: chỉ cho xem dữ liệu
++db_writer: cho phép xóa sửa dữ liệu
+
+-Mở cha kéo con vào
+
+sys.syslogins
+sys.sysuers
+sys.sysmembers
+
+Vì mySQL cho phép site chủ phân thành các site phân mảnh do đó
+
+Có 3 cách để kết nối giao diện với database:
++Odbc
++Oledb
++SqlClient
+
+Datasource: Chứa tên server 
+Catalog: chứa tên của database (Cùng 1 tên là NGANHANG cho nên là xài chung)
+
+Username: chứa mã nhân viên 
+
+Tải về dạng reader:
+Ưu điểm: Tải về nhanh
+Khuyết điểm: Chỉ cho phép xem, chỉ cho lấy số liệu theo 1 chiều
+
+Tải về dạng table:
+Ưu điểm: Xem, xóa, sửa dễ dàng
+Khuyết điểm: Tốc độ tải dữ liệu chậm hơn nhiều so với reader

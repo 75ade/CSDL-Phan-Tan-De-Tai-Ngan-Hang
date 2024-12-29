@@ -1,0 +1,47 @@
+Giải thích về SP_SAOKETAIKHOAN:
+-Chú thích:
++STK gốc: Là số tài khoản mà chúng ta nhập vào để sao kê
++Cursor: Được sử dụng như 1 cái mảng để lưu dữ liệu và cho phép ta thực hiện duyệt dữ liệu trên đó
++Tab: Là bảng mà ta sẽ trả về chứa dữ liệu sao kê 
+
+-Bước 1: Tìm số dư hiện tại của tài khoản
+
+-Bước 2: Ta thực hiện tính số tiền kể từ ngày bắt đầu chọn sao kê (Số tiền ban đầu):
++Nếu loại giao dịch là "Rút tiền" = RT -> Cộng số tiền vào số dư hiện tại vì trước khi rút thì tiền vẫn ở trong tài khoản gốc
++Nếu loại giao dịch là "Gửi tiền" = GT -> Trừ số tiền vào số dư hiện tại vì trước khi gửi tiền vào tài khoản thì trong tài khoản gốc vẫn chưa có số tiền đó
++Nếu loại giao dịch là nhận tiền (SOTK trong bảng GD là STK gốc  = Số tài khoản nhận là STK gốc) -> Trừ số tiền vào số dư hiện tại vì trước khi nhận tiền thì trong tài khoản gốc không có số tiền này
++Nếu loại giao dịch là chuyển tiền (SOTK trong bảng GD không phải là STK gốc mà là số tài khoản khác = Số tài khoản nhận không là STK gốc) -> Cộng số tiền vào số dư hiện tại vì trước khi thực hiện chuyển tiền thì trong tài khoản gốc vẫn còn số tiền đó
+
+-Bước 3: Ta tạo 1 cursor để lưu toàn bộ giao dịch gửi rút và chuyển tiền của số tài khoản gốc 
+
+-Bước 4: Cho cursor đi đến vị trí đầu tiên bằng câu lệnh:
+		FETCH NEXT FROM CURSORTK 
+		INTO @NGAYGD, @LOAIGD, @SOTIEN, @TK_NHAN
+
+-Bước 5: Set số dư ban đầu (số dư từ ngày bắt đầu sao kê) = Số tiền ban đầu
+
+-Bước 6: Tính số dư sau cho giao dịch đầu tiên kể từ ngày bắt đầu thực hiện sao kê, nếu loại giao dịch (@LOAIGD) trong cursor là:
++Rút tiền (RT) -> Số dư sau = Số dư đầu - Số tiền
++Gửi tiền (GT) -> Số dư sau = Số dư đầu + Số tiền
++@TK_NHAN = SOTK gốc -> Nhận tiền -> Số dư sau = Số dư đầu + Số tiền
++@TK_NHAN != SOTK gốc -> Chuyển tiền -> Số dư sau = Số dư đầu - Số tiền
+
+-Bước 7: Lưu số dư sau vào 1 biến tạm (biến temp)
+
+-Bước 8: Thêm vào bảng Tab dòng dữ liệu bằng:
+		INSERT INTO @TAB(SODUDAU, NGAYGD, LOAIGD, SOTIEN, SODUSAU)
+		VALUES (@SODUDAU, @NGAYGD, @LOAIGD, @SOTIEN, @SODUSAU)
+
+-Bước 9: Duyệt tiếp đến dòng tiếp theo trong cursor
+
+-Bước 10: Set số dư đầu = Biến temp (Số dư sau)
+
+-Bước 11: Tìm số dư sau cho giao dịch tiếp theo tương tự như bước 6
+
+-Bước 12: Lặp lại bước 7 cho đến ngày kết thúc dịch vụ sao kê của SOTK gốc
+
+-Bước 13: Trả về bảng dữ liệu Tab với:
++Số dư sau < Số dư đầu (Chuyển tiền) -> Loại GD là chuyển tiền
++Số dư sau > Số dư đầu (Nhận tiền) -> Loại GD là nhận tiền
++Loại GD = GT = Gửi tiền
++Loại GD = RT = Rút tiền
